@@ -19,16 +19,17 @@ output:
 
 
 
+
 |   -     |   -   |
 |   ----------    |   -   |
-|   Bioproject    |   .   |
-|   Especie   |   .   |
-|   Tipo de bibliotecas   |   .   |
+|   Bioproject    |   [PRJNA858106](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA858106)   |
+|   Especie   |   *Homo sapiens*   |
+|   Tipo de bibliotecas   |   *Paired-end*   |
 |   Método de selección   |      .   |
-|   Número de transcriptomas    |   .   |
-|   Número de réplicas biológicas   |   .   |
-|   Secuenciador    |   .   |
-|   Distribución de las muestras    |   .   |
+|   Número de transcriptomas    |   . |
+|   Número de réplicas biológicas   |   10 (3 controles y 7 casos)   |
+|   Secuenciador    |   Illumina NovaSeq 6000 (Homo sapiens)     |
+|   Distribución de las muestras  (SRA)   |   SRS13811439 (Control-1), SRS13811440 (Control-2), SRS13811441 (Control-3), SRS13811442 (Patient-1), SRS13811443 (Patient-2), SRS13811444 (Patient-3), SRS13811445 (Patient-4), SRS13811446 (Patient-5), SRS13811447 (Patient-6) y SRS13811448 (Patient-7) |
 |   Profundidad de secuenciación de cada transcriptoma    |   .   |
 
 # Resumen
@@ -36,25 +37,48 @@ output:
 
 
 
+# Métodos 
+
+## Análisis de calidad de las lecturas y limpieza de adaptadores
+
+
+
+### Análisis de  *raw data*
+
+###  Limpieza de adaptadores
+
+
+
+### Analisis de calidad de las lecturas sin adaptadores
+
+## Ensamblaje con el transcriptoma de referencia
+
+
+
+## Expresión diferencial
+
+
+
+
+
 
 # Resultados
 
+## Análisis de calidad de datos crudos
+
+
+Todo el resumen de la calidad de los datso crudos se encuentra [aquí](QC/QC_rawData/multiqc_report.html).
+
+
+## Análisis de calidad de los datos sin adaptadores
 
 
 
-# Results and discussion
-## Quality analysis of the readings and cleaning of adapters
-
-### General Statistics
 
 
 
-### FastQC
 
 
-## Assembly with the reference transcriptome (kallisto)
-## Differential expression with DESeq2
-## Analysis of GO terms
 # Discusión
 
 

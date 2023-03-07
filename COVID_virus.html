@@ -1521,6 +1521,10 @@ Efraín, Talavera Cruz María Fernanda</h4>
 <h1><span class="header-section-number">1</span> Descripción de los
 datos</h1>
 <table>
+<colgroup>
+<col width="90%" />
+<col width="9%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th>-</th>
@@ -1530,15 +1534,15 @@ datos</h1>
 <tbody>
 <tr class="odd">
 <td>Bioproject</td>
-<td>.</td>
+<td><a href="https://www.ncbi.nlm.nih.gov/bioproject/PRJNA858106">PRJNA858106</a></td>
 </tr>
 <tr class="even">
 <td>Especie</td>
-<td>.</td>
+<td><em>Homo sapiens</em></td>
 </tr>
 <tr class="odd">
 <td>Tipo de bibliotecas</td>
-<td>.</td>
+<td><em>Paired-end</em></td>
 </tr>
 <tr class="even">
 <td>Método de selección</td>
@@ -1550,15 +1554,18 @@ datos</h1>
 </tr>
 <tr class="even">
 <td>Número de réplicas biológicas</td>
-<td>.</td>
+<td>10 (3 controles y 7 casos)</td>
 </tr>
 <tr class="odd">
 <td>Secuenciador</td>
-<td>.</td>
+<td>Illumina NovaSeq 6000 (Homo sapiens)</td>
 </tr>
 <tr class="even">
-<td>Distribución de las muestras</td>
-<td>.</td>
+<td>Distribución de las muestras (SRA)</td>
+<td>SRS13811439 (Control-1), SRS13811440 (Control-2), SRS13811441
+(Control-3), SRS13811442 (Patient-1), SRS13811443 (Patient-2),
+SRS13811444 (Patient-3), SRS13811445 (Patient-4), SRS13811446
+(Patient-5), SRS13811447 (Patient-6) y SRS13811448 (Patient-7)</td>
 </tr>
 <tr class="odd">
 <td>Profundidad de secuenciación de cada transcriptoma</td>
@@ -1570,34 +1577,39 @@ datos</h1>
 <div id="resumen" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Resumen</h1>
 </div>
-<div id="resultados" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> Resultados</h1>
+<div id="métodos" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Métodos</h1>
+<div id="análisis-de-calidad-de-las-lecturas-y-limpieza-de-adaptadores" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Análisis de calidad
+de las lecturas y limpieza de adaptadores</h2>
+<div id="análisis-de-raw-data" class="section level3" number="3.1.1">
+<h3><span class="header-section-number">3.1.1</span> Análisis de <em>raw
+data</em></h3>
 </div>
-<div id="results-and-discussion" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Results and
-discussion</h1>
-<div id="quality-analysis-of-the-readings-and-cleaning-of-adapters" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> Quality analysis of
-the readings and cleaning of adapters</h2>
-<div id="general-statistics" class="section level3" number="4.1.1">
-<h3><span class="header-section-number">4.1.1</span> General
-Statistics</h3>
+<div id="limpieza-de-adaptadores" class="section level3" number="3.1.2">
+<h3><span class="header-section-number">3.1.2</span> Limpieza de
+adaptadores</h3>
 </div>
-<div id="fastqc" class="section level3" number="4.1.2">
-<h3><span class="header-section-number">4.1.2</span> FastQC</h3>
+<div id="analisis-de-calidad-de-las-lecturas-sin-adaptadores" class="section level3" number="3.1.3">
+<h3><span class="header-section-number">3.1.3</span> Analisis de calidad
+de las lecturas sin adaptadores</h3>
 </div>
 </div>
-<div id="assembly-with-the-reference-transcriptome-kallisto" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> Assembly with the
-reference transcriptome (kallisto)</h2>
+<div id="ensamblaje-con-el-transcriptoma-de-referencia" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Ensamblaje con el
+transcriptoma de referencia</h2>
 </div>
-<div id="differential-expression-with-deseq2" class="section level2" number="4.3">
-<h2><span class="header-section-number">4.3</span> Differential
-expression with DESeq2</h2>
+<div id="expresión-diferencial" class="section level2" number="3.3">
+<h2><span class="header-section-number">3.3</span> Expresión
+diferencial</h2>
 </div>
-<div id="analysis-of-go-terms" class="section level2" number="4.4">
-<h2><span class="header-section-number">4.4</span> Analysis of GO
-terms</h2>
+</div>
+<div id="resultados" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Resultados</h1>
+<div id="análisis-de-calidad-de-datos-crudos" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Análisis de calidad
+de datos crudos</h2>
+<p>Todo el resumen de la calidad de los datso crudos se encuentra <a href="QC/QC_rawData/multiqc_report.html">aquí</a></p>
 </div>
 </div>
 <div id="discusión" class="section level1" number="5">
