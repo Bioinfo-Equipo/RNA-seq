@@ -1,0 +1,101 @@
+---
+title: "RNA-Seq analysis"
+author: Ramos Galguera Johana Itzel, Marín Peralta Alejandro Efraín, Talavera Cruz
+  María Fernanda
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      toc_collapsed: yes
+    toc_depth: 3
+    number_sections: yes
+    theme: lumen
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+# Data description
+
+<table class="table table-hover">
+  <tbody>
+  </tr>
+    <tr class="table-light">
+      <th scope="row">Bioproject</th>
+      <td><center>PRJNA858106</center></td>
+  </tr>
+   </tr>
+    <tr class="table-light">
+      <th scope="row">Species</th>
+      <td><center>Human</center></td>
+  </tr>
+  </tr>
+    <tr class="table-light">
+      <th scope="row">Libraries type</th>
+      <td><center>Paired-end</center></td>
+  </tr>
+  </tr>
+    <tr class="table-light">
+      <th scope="row">Selection method</th>
+      <td><center>?</center></td>
+  </tr>
+  </tr>
+    <tr class="table-light">
+      <th scope="row">Number of transcriptomes</th>
+      <td><center>10</center></td>
+  </tr>
+  </tr>
+    <tr class="table-light">
+      <th scope="row">Number of biological replicates</th>
+      <td><center>?</center></td>
+  </tr>
+  </tr>
+    <tr class="table-light">
+      <th scope="row">Sequencer</th>
+      <td><center>ILLUMINA (Illumina NovaSeq 6000)</center></td>
+  </tr>
+  </tr>
+    <tr class="table-light">
+      <th scope="row">Sample distribution (control and treatment)</th>
+      <td><center>?</center></td>
+  </tr>
+  </tr>
+    <tr class="table-light">
+      <th scope="row">Sequencing depth of each transcriptome</th>
+      <td><center>?</center></td>
+  </tr>
+  </tbody>
+</table>
+
+# Abstract
+
+# Results and discussion
+## Quality analysis of the readings and cleaning of adapters
+
+### General Statistics
+![](generalStats.png)
+
+### FastQC
+![](Sequence_Quality_Histograms.png)
+
+![](Per_Sequence_Quality_Scores.png)
+
+![](Per_Base_Sequence_Content.png)
+
+![](Per_Sequence_GC_Content.png)
+
+![](Per_Base_N_Content.png)
+
+![](Sequence_Length_Distribution.png)
+
+![](Sequence_Duplication_Levels.png)
+
+![](Overrepresented_sequences.png)
+
+![](Adapter_Content.png)
+
+## Assembly with the reference transcriptome (kallisto)
+## Differential expression with DESeq2
+## Analysis of GO terms
+# Visualization
