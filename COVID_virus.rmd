@@ -1,0 +1,62 @@
+---
+title: "Bioproject RNAseq: COVID 19"
+author: Ramos Galguera Johana Itzel, Marín Peralta Alejandro Efraín, Talavera Cruz
+  María Fernanda
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      toc_collapsed: true
+    toc_depth: 3
+    number_sections: true
+    theme: lumen
+---
+
+
+
+# Descripción de los datos
+
+
+
+|   -     |   -   |
+|   ----------    |   -   |
+|   Bioproject    |   .   |
+|   Especie   |   .   |
+|   Tipo de bibliotecas   |   .   |
+|   Método de selección   |      .   |
+|   Número de transcriptomas    |   .   |
+|   Número de réplicas biológicas   |   .   |
+|   Secuenciador    |   .   |
+|   Distribución de las muestras    |   .   |
+|   Profundidad de secuenciación de cada transcriptoma    |   .   |
+
+# Resumen
+
+
+
+
+
+# Resultados
+
+
+
+
+# Results and discussion
+## Quality analysis of the readings and cleaning of adapters
+
+### General Statistics
+
+
+
+### FastQC
+
+
+## Assembly with the reference transcriptome (kallisto)
+## Differential expression with DESeq2
+## Analysis of GO terms
+# Discusión
+
+
+
+
