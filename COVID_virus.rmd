@@ -20,20 +20,46 @@ su creación están disponibles en
 
 # Descripción de los datos
 
-
-
-
-|   -     |   -   |
-|   ----------    |   -   |
-|   Bioproject    |   [PRJNA858106](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA858106)   |
-|   Especie   |   *Homo sapiens*   |
-|   Tipo de bibliotecas   |   *Paired-end*   |
-|   Método de selección   |      .   |
-|   Número de transcriptomas    |   . |
-|   Número de réplicas biológicas   |   10 (3 controles y 7 casos)   |
-|   Secuenciador    |   Illumina NovaSeq 6000 (Homo sapiens)     |
-|   Distribución de las muestras  (SRA)   |   SRS13811439 (Control-1), SRS13811440 (Control-2), SRS13811441 (Control-3), SRS13811442 (Patient-1), SRS13811443 (Patient-2), SRS13811444 (Patient-3), SRS13811445 (Patient-4), SRS13811446 (Patient-5), SRS13811447 (Patient-6) y SRS13811448 (Patient-7) |
-|   Profundidad de secuenciación de cada transcriptoma    |   .   |
+<table class="table table-bordered">
+  <tbody>
+    <tr>
+      <td>Bioproject</td>
+      <td>[PRJNA858106](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA858106) </td>
+    </tr>
+    <tr>
+      <td>Especie</td>
+      <td>*Homo sapiens* </td>
+    </tr>
+    <tr>
+      <td>Tipo de bibliotecas</td>
+      <td>*Paired-end* </td>
+    </tr>
+    <tr>
+      <td>Método de selección</td>
+      <td>.</td>
+    </tr>
+    <tr>
+      <td>Número de transcriptomas</td>
+      <td>.</td>
+    </tr>
+    <tr>
+      <td>Número de réplicas biológicas</td>
+      <td>10 (3 controles y 7 casos)</td>
+    </tr>
+    <tr>
+      <td>Secuenciador</td>
+      <td>Illumina NovaSeq 6000 (Homo sapiens)</td>
+    </tr>
+    <tr>
+      <td>Distribución de las muestras  (SRA)</td>
+      <td>SRS13811439 (Control-1), SRS13811440 (Control-2), SRS13811441 (Control-3), SRS13811442 (Patient-1), SRS13811443 (Patient-2), SRS13811444 (Patient-3), SRS13811445 (Patient-4), SRS13811446 (Patient-5), SRS13811447 (Patient-6) y SRS13811448 (Patient-7)</td>
+    </tr>
+    <tr>
+      <td>Profundidad de secuenciación de cada transcriptoma</td>
+      <td>.</td>
+    </tr>
+  </tbody>
+</table>
 
 # Resumen
 

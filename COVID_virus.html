@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ramos Galguera Johana Itzel, Marín Peralta Alejandro Efraín, Talavera Cruz María Fernanda" />
 
-<meta name="date" content="2023-03-06" />
+<meta name="date" content="2023-03-07" />
 
 <title>Bioproject RNAseq: COVID 19</title>
 
@@ -1512,7 +1512,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">Bioproject RNAseq: COVID 19</h1>
 <h4 class="author">Ramos Galguera Johana Itzel, Marín Peralta Alejandro
 Efraín, Talavera Cruz María Fernanda</h4>
-<h4 class="date">2023-03-06</h4>
+<h4 class="date">2023-03-07</h4>
 
 </div>
 
@@ -1522,56 +1522,82 @@ usados para su creación están disponibles en <a href="https://github.com/Bioin
 <div id="descripción-de-los-datos" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Descripción de los
 datos</h1>
-<table>
-<colgroup>
-<col width="90%" />
-<col width="9%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>-</th>
-<th>-</th>
-</tr>
-</thead>
+<table class="table table-bordered">
 <tbody>
-<tr class="odd">
-<td>Bioproject</td>
-<td><a href="https://www.ncbi.nlm.nih.gov/bioproject/PRJNA858106">PRJNA858106</a></td>
+<tr>
+<td>
+Bioproject
+</td>
+<td>
+<a href="https://www.ncbi.nlm.nih.gov/bioproject/PRJNA858106">PRJNA858106</a>
+</td>
 </tr>
-<tr class="even">
-<td>Especie</td>
-<td><em>Homo sapiens</em></td>
+<tr>
+<td>
+Especie
+</td>
+<td>
+<em>Homo sapiens</em>
+</td>
 </tr>
-<tr class="odd">
-<td>Tipo de bibliotecas</td>
-<td><em>Paired-end</em></td>
+<tr>
+<td>
+Tipo de bibliotecas
+</td>
+<td>
+<em>Paired-end</em>
+</td>
 </tr>
-<tr class="even">
-<td>Método de selección</td>
-<td>.</td>
+<tr>
+<td>
+Método de selección
+</td>
+<td>
+.
+</td>
 </tr>
-<tr class="odd">
-<td>Número de transcriptomas</td>
-<td>.</td>
+<tr>
+<td>
+Número de transcriptomas
+</td>
+<td>
+.
+</td>
 </tr>
-<tr class="even">
-<td>Número de réplicas biológicas</td>
-<td>10 (3 controles y 7 casos)</td>
+<tr>
+<td>
+Número de réplicas biológicas
+</td>
+<td>
+10 (3 controles y 7 casos)
+</td>
 </tr>
-<tr class="odd">
-<td>Secuenciador</td>
-<td>Illumina NovaSeq 6000 (Homo sapiens)</td>
+<tr>
+<td>
+Secuenciador
+</td>
+<td>
+Illumina NovaSeq 6000 (Homo sapiens)
+</td>
 </tr>
-<tr class="even">
-<td>Distribución de las muestras (SRA)</td>
-<td>SRS13811439 (Control-1), SRS13811440 (Control-2), SRS13811441
+<tr>
+<td>
+Distribución de las muestras (SRA)
+</td>
+<td>
+SRS13811439 (Control-1), SRS13811440 (Control-2), SRS13811441
 (Control-3), SRS13811442 (Patient-1), SRS13811443 (Patient-2),
 SRS13811444 (Patient-3), SRS13811445 (Patient-4), SRS13811446
-(Patient-5), SRS13811447 (Patient-6) y SRS13811448 (Patient-7)</td>
+(Patient-5), SRS13811447 (Patient-6) y SRS13811448 (Patient-7)
+</td>
 </tr>
-<tr class="odd">
-<td>Profundidad de secuenciación de cada transcriptoma</td>
-<td>.</td>
+<tr>
+<td>
+Profundidad de secuenciación de cada transcriptoma
+</td>
+<td>
+.
+</td>
 </tr>
 </tbody>
 </table>
@@ -1596,12 +1622,16 @@ conjunto todos los resultados.</p>
 adaptadores</h3>
 <p>Para limpiar los adaptadores se usó el software trimmomatic en el
 siguiente bash script:</p>
-<pre><code>do echo
+<pre><code>cd data
+for i in *_1.fastq.gz;
+do echo
 trimmomatic PE -threads 8 -phred33 $i &quot;${i%_1.fastq.gz}_2.fastq.gz&quot; \
 ../data_trimmed/&quot;${i%_1.fastq.gz}_1_trimmed.fastq.gz&quot; ../data_trimmed/&quot;${i%_1.fastq.gz}_1_unpaired.fastq.gz&quot; \
 ../data_trimmed/&quot;${i%_1.fastq.gz}_2_trimmed.fastq.gz&quot; ../data_trimmed/&quot;${i%_1.fastq.gz}_2_unpaired.fastq.gz&quot; \
 ILLUMINACLIP:../TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:5:20 MINLEN:60
 done</code></pre>
+<p>El script no es tan complicado. <code>./data</code> es el directorio
+con todos los archivos crudos descargados de SRA.</p>
 </div>
 <div id="analisis-de-calidad-de-las-lecturas-sin-adaptadores" class="section level3" number="3.1.3">
 <h3><span class="header-section-number">3.1.3</span> Analisis de calidad
