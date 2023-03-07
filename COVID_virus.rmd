@@ -13,6 +13,9 @@ output:
     theme: lumen
 ---
 
+Este reporte, así como su versión en PDF y HTML, y todos los archivos usados para
+su creación están disponibles en 
+[GitHub](https://github.com/Bioinfo-Equipo/RNA-seq).
 
 
 # Descripción de los datos
@@ -72,14 +75,44 @@ Todo el resumen de la calidad de los datso crudos se encuentra [aquí](QC/QC_raw
 
 ## Análisis de calidad de los datos sin adaptadores
 
+Como podemos ver en la siguiente gráfica, la calidad media de cada base de
+las reads es en general buena.
+
+![](QC/QC_trimmedData/fastqc_per_base_sequence_quality_plot.png)
 
 
+También podemos ver que la calidad media de las *reads* igualmente es buena.
+
+![](QC/QC_trimmedData/fastqc_per_sequence_quality_scores_plot.png)
+
+El contenido de GC es complicado, pero como estamos analizando datos de 
+transcripción, toleraremos que hayan varios picos y distribuciones no normales.
+
+![](QC/QC_trimmedData/fastqc_per_sequence_gc_content_plot.png)
 
 
+La calidad de secuenciación es de un nivel tal que la existencia lecturas N 
+es casi nula.
 
 
+![](QC/QC_trimmedData/fastqc_per_base_n_content_plot.png)
+
+
+La longitud de las secuencias si bien no es perfecta, es aceptable. Además, 
+son secuencias largas, por lo que el alineamiento será mejor.
+
+![](QC/QC_trimmedData/fastqc_sequence_length_distribution_plot.png)
+
+
+En cuanto a lecturas duplicadas, hay muchas que se repiten; lo cual tiene sentido,
+ya que estamos anlizando datos de transcripción.
+
+![](QC/QC_trimmedData/fastqc_sequence_duplication_levels_plot.png)
 
 # Discusión
+
+
+
 
 
 
