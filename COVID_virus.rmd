@@ -48,11 +48,36 @@ su creación están disponibles en
 
 ### Análisis de  *raw data*
 
+Para el análisis de calidad se usó fastqc de manera individual para cada data set
+del SRA, y después se usó multiqc para visualizar en conjunto todos los resultados.
+
+
 ###  Limpieza de adaptadores
+
+Para limpiar los adaptadores se usó el software trimmomatic en el siguiente 
+bash script:
+
+```
+cd data
+for i in *_1.fastq.gz;
+do echo
+trimmomatic PE -threads 8 -phred33 $i "${i%_1.fastq.gz}_2.fastq.gz" \
+../data_trimmed/"${i%_1.fastq.gz}_1_trimmed.fastq.gz" ../data_trimmed/"${i%_1.fastq.gz}_1_unpaired.fastq.gz" \
+../data_trimmed/"${i%_1.fastq.gz}_2_trimmed.fastq.gz" ../data_trimmed/"${i%_1.fastq.gz}_2_unpaired.fastq.gz" \
+ILLUMINACLIP:../TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:5:20 MINLEN:60
+done
+```
+
+El script no es tan complicado. ```./data``` es el directorio con todos los 
+archivos crudos descargados de SRA.
+
 
 
 
 ### Analisis de calidad de las lecturas sin adaptadores
+
+Se realizó el mismo procedimiento que con los datos crudos.
+
 
 ## Ensamblaje con el transcriptoma de referencia
 
@@ -70,10 +95,17 @@ su creación están disponibles en
 ## Análisis de calidad de datos crudos
 
 
-Todo el resumen de la calidad de los datso crudos se encuentra [aquí](QC/QC_rawData/multiqc_report.html).
+Todo el resumen de la calidad de los datos crudos se encuentra [aquí](QC/QC_rawData/multiqc_report.html).
+
+
+Todos los resultados se encuentran dentro del DNA HPCC en la ruta
+```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_rawData```.
+
+
 
 
 ## Análisis de calidad de los datos sin adaptadores
+
 
 Como podemos ver en la siguiente gráfica, la calidad media de cada base de
 las reads es en general buena.
@@ -108,6 +140,10 @@ En cuanto a lecturas duplicadas, hay muchas que se repiten; lo cual tiene sentid
 ya que estamos anlizando datos de transcripción.
 
 ![](QC/QC_trimmedData/fastqc_sequence_duplication_levels_plot.png)
+
+Todos los resultados, tanto individuales de cada fastqc como del multiqc, se encuentran
+dentro del DNA HPCC en la ruta
+```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_trimmed```.
 
 # Discusión
 
