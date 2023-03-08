@@ -40,7 +40,7 @@ su creación están disponibles en
     </tr>
     <tr>
       <td>Número de transcriptomas</td>
-      <td>.</td>
+      <td>10</td>
     </tr>
     <tr>
       <td>Número de réplicas biológicas</td>
@@ -107,6 +107,57 @@ Se realizó el mismo procedimiento que con los datos crudos.
 
 ## Ensamblaje con el transcriptoma de referencia
 
+Creamos un symlink para el transcriptoma de referencia.
+```
+ln -s /mnt/Timina/bioinfoII/rnaseq/BioProject_2023/examples_class/Human_cells_example/gencode.vM28.transcripts.fa.gz . 
+```
+
+Generamos el index de Kallisto.
+```
+module load kallisto/0.45.0 # cargar modulo de kallisto
+kallisto index -i ./kallisto_quant/Hs_ref.kidx gencode.vM28.transcripts.fa.gz
+```
+
+Mandamos un job para generar el pseudoalineamiento con kallisto.
+```
+#!/bin/bash
+# Use current working directory
+#$ -cwd
+#
+# Join stdout and stderr
+#$ -j y
+#
+# Run job through bash shell
+#$ -S /bin/bash
+#
+#You can edit the scriptsince this line
+#
+# Your job name
+#$ -N kallisto_quant
+#
+# Send an email after the job has finished
+#$ -m e
+#$ -M aefrainmp@protonmail.com
+#
+# If modules are needed, source modules environment (Do not delete the next line):
+. /etc/profile.d/modules.sh
+#
+# Add any modules you might require:
+module load kallisto/0.45.0
+#
+# Write your commands in the next line
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114171 -t 25 ./data_trimmed/SRR20114171_1_trimmed.fastq.gz ./data_trimmed/SRR20114171_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114172 -t 25 ./data_trimmed/SRR20114172_1_trimmed.fastq.gz ./data_trimmed/SRR20114172_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114173 -t 25 ./data_trimmed/SRR20114173_1_trimmed.fastq.gz ./data_trimmed/SRR20114173_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114174 -t 25 ./data_trimmed/SRR20114174_1_trimmed.fastq.gz ./data_trimmed/SRR20114174_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114175 -t 25 ./data_trimmed/SRR20114175_1_trimmed.fastq.gz ./data_trimmed/SRR20114175_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114176 -t 25 ./data_trimmed/SRR20114176_1_trimmed.fastq.gz ./data_trimmed/SRR20114176_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114177 -t 25 ./data_trimmed/SRR20114177_1_trimmed.fastq.gz ./data_trimmed/SRR20114177_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114178 -t 25 ./data_trimmed/SRR20114178_1_trimmed.fastq.gz ./data_trimmed/SRR20114178_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114179 -t 25 ./data_trimmed/SRR20114179_1_trimmed.fastq.gz ./data_trimmed/SRR20114179_2_trimmed.fastq.gz
+kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114180 -t 25 ./data_trimmed/SRR20114180_1_trimmed.fastq.gz ./data_trimmed/SRR20114180_2_trimmed.fastq.gz
+# I'm really bad at bash scripting sorry :C
+```
 
 
 ## Expresión diferencial
@@ -125,7 +176,7 @@ Todo el resumen de la calidad de los datos crudos se encuentra [aquí](QC/QC_raw
 
 
 Todos los resultados se encuentran dentro del DNA HPCC en la ruta
-```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_rawData```.
+```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_rawData.```
 
 
 
@@ -169,7 +220,8 @@ ya que estamos anlizando datos de transcripción.
 
 Todos los resultados, tanto individuales de cada fastqc como del multiqc, se encuentran
 dentro del DNA HPCC en la ruta
-```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_trimmed```.
+```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_trimmed```
+
 
 # Discusión
 
