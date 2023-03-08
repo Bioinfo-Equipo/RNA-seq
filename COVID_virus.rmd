@@ -195,6 +195,7 @@ tx2gene <- read.csv("gencode.vM28.basic.trx_id-gene_id-no_ver.tsv",stringsAsFact
 txi.kallisto <- tximport(Hs_files, type = "kallisto", tx2gene = tx2gene, ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
 
 ```
+
 ```{r}
 names(txi.kallisto)
 ```
