@@ -1,0 +1,13 @@
+{
+	"n_targets": 142376,
+	"n_bootstraps": 0,
+	"n_processed": 93075736,
+	"n_pseudoaligned": 9484507,
+	"n_unique": 3884083,
+	"p_pseudoaligned": 10.2,
+	"p_unique": 4.2,
+	"kallisto_version": "0.45.0",
+	"index_version": 10,
+	"start_time": "Tue Mar  7 21:10:28 2023",
+	"call": "kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114180 -t 25 ./data_trimmed/SRR20114180_1_trimmed.fastq.gz ./data_trimmed/SRR20114180_2_trimmed.fastq.gz"
+}

@@ -124,7 +124,7 @@ Posteriormente, se crearon directorios individuales para cada muestra dentro de
 ```./kallisto_quant/```, ya que kallisto solo trabaja individualmente con cada
 par de lecturas.
 
-El pseudoalineamiento con kallisto se realizó para cada muestra con la siguiente
+El pseudoalineamiento y cuantificacióncon kallisto se realizó para cada muestra con la siguiente
 estructura:
 
 ```
@@ -134,12 +134,16 @@ kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114171 -
 Donde ```-i``` indica el índice, ```-o``` el directorio de salido, ```-t```
 el número de núcleos a usar y los otros dos archivos son el par de reads.
 
-
+El output de kallisto son tres archivos: un json llamado ```un_info.json```,
+un archivo de texto con las estimaciones de la abundancia llamado
+```abundance.tsv``` y un archivo binario con información de la corrida, estimación
+de la abundancia, estimados de bootstrap y longitud de los transcritos llamado
+```abundance.h5 ```.
 
 
 ## Expresión diferencial
 
-```{r}
+```{r echo=FALSE}
 library(tximport)
 library(tidyverse)
 library(DESeq2)
@@ -151,8 +155,14 @@ library(rhdf5)
 
 ```{r}
 # generar tabla de metadatos
-Hs_metadata.tsv <- data.frame("SRA" =c("SRR20114180","SRR20114179", "SRR20114178", "SRR20114177", "SRR20114176",
-                                          "SRR20114175", "SRR20114174", "SRR20114173", "SRR20114172", "SRR20114171"), "sample" = c("control_1","control_2","control_3", "patient_1", "patient_2", "patient_3", "patient_4", "patient_5", "patient_6", "patient_7") , "dex" = c(rep("control",3), rep("patient",7)), "species" = "Homo_sapiens")
+
+Hs_metadata.tsv = data.frame(
+  "SRA" = c("SRR20114180","SRR20114179", "SRR20114178", "SRR20114177",
+            "SRR20114176","SRR20114175", "SRR20114174", "SRR20114173",
+            "SRR20114172", "SRR20114171"), 
+  "sample" = c("control_1","control_2","control_3", "patient_1", "patient_2", 
+               "patient_3", "patient_4", "patient_5", "patient_6", "patient_7"),
+  "dex" = c(rep("control",3), rep("patient",7)), "species" = "Homo_sapiens")
 ```
 
 ```{r}
