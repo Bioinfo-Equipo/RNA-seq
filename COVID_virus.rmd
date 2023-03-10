@@ -36,11 +36,11 @@ su creación están disponibles en
     </tr>
     <tr>
       <td>Método de selección</td>
-      <td>.</td>
+      <td>Ribo-zero</td>
     </tr>
     <tr>
       <td>Número de transcriptomas</td>
-      <td>10</td>
+      <td>1 (Gencode v43)</td>
     </tr>
     <tr>
       <td>Número de réplicas biológicas</td>
