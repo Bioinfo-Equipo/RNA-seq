@@ -94,19 +94,17 @@ ILLUMINACLIP:../TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:5:20 MI
 done
 ```
 
-El script no es tan complicado. ```./data``` es el directorio con todos los 
-archivos crudos descargados de SRA.
+El script no es tan complicado, donde:
 
-Donde:
-
-- ```PE``` es para decir que el input sera un archivo paired end
-- ```phred33``` especifica la calidad de las bases
-- ```threads``` indica el número de núcleos que se van a utilizar
-- ```ILLUMINACLIP``` es para indicar los adaptadores y otras secuencias específicas de illumina
-- ```LEADING``` es para cortar las bases del comienzo de una lectura, si está por debajo de un umbral de calidad
-- ```TRAILING``` es para cortar las bases del final de una lectura, si está por debajo de un umbral de calidad
-- ```SLIDINGWINDOW``` recorta la lectura una vez que la calidad promedio dentro de la ventana cae por debajo de un umbral
-- ```MINLEN``` descarta la lectura si está por debajo de una longitud especificada
+- ```./data``` es el directorio con todos los archivos crudos descargados de SRA.
+- ```PE``` es para decir que el input sera un archivo paired end.
+- ```phred33``` especifica la calidad de las bases.
+- ```threads``` indica el número de núcleos que se van a utilizar.
+- ```ILLUMINACLIP``` es para indicar los adaptadores y otras secuencias específicas de illumina.
+- ```LEADING``` es para cortar las bases del comienzo de una lectura, si está por debajo de un umbral de calidad.
+- ```TRAILING``` es para cortar las bases del final de una lectura, si está por debajo de un umbral de calidad.
+- ```SLIDINGWINDOW``` recorta la lectura una vez que la calidad promedio dentro de la ventana cae por debajo de un umbral.
+- ```MINLEN``` descarta la lectura si está por debajo de una longitud especificada.
 
 
 
@@ -117,17 +115,17 @@ Se realizó el mismo procedimiento que con los datos crudos.
 
 ## Ensamblaje con el transcriptoma de referencia
 
-Creamos un enlace simbólico para el transcriptoma de referencia en el directorio donde 
+Descargamos el transcriptoma de referencia en el directorio donde 
 se correra kallisto, *i. e.*, en 
-```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus```:
+```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus``` con wget:
 
 ```
-ln -s /mnt/Timina/bioinfoII/rnaseq/BioProject_2023/examples_class/Human_cells_example/gencode.vM28.transcripts.fa.gz . 
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_43/gencode.v43.transcripts.fa.gz
 ```
 
 Después, generamos el index de Kallisto con
 ```
-kallisto index -i ./kallisto_quant/Hs_ref.kidx gencode.vM28.transcripts.fa.gz
+kallisto index -i ./kallisto_quant/Hs_ref.kidx gencode.v43.transcripts.fa.gz
 ```
 
 Posteriormente, se crearon directorios individuales para cada muestra dentro de 
@@ -153,6 +151,9 @@ de la abundancia, estimados de bootstrap y longitud de los transcritos llamado
 
 ## Expresión diferencial
 
+### Efra
+
+
 ```{r echo=FALSE}
 library(tximport)
 library(tidyverse)
@@ -164,17 +165,29 @@ library(rhdf5)
 
 
 ```{r}
+files = file.path("/home/emp/Documents/LCG/4th/Bioinfo/github/RNA-seq/kallisto_quant",
+             list.dirs("/home/emp/Documents/LCG/4th/Bioinfo/github/RNA-seq/kallisto_quant"),
+             "abundance.h5")
+names(files) = str_extract(files, "SRR\\d+")
+
+txi.kallisto.tsv = tximport(files, type = "kallisto", tx2gene = tx2gene,
+                            ignoreAfterBar = TRUE)
+```
+
+
+### Fer
+
+
+```{r}
 # generar tabla de metadatos
-
-
-
 
 Hs_metadata.tsv = data.frame(
   "SRA" = c("SRR20114180","SRR20114179", "SRR20114178", "SRR20114177",
             "SRR20114176","SRR20114175", "SRR20114174", "SRR20114173",
             "SRR20114172", "SRR20114171"), 
   "sample" = c("control_1","control_2","control_3", "patient_1", "patient_2", 
-               "patient_3", "patient_4", "patient_5", "patient_6", "patient_7"), "dex" = c(rep("control",3), rep("patient",7)), "species" = "Homo_sapiens")
+               "patient_3", "patient_4", "patient_5", "patient_6", "patient_7"),
+  "dex" = c(rep("control",3), rep("patient",7)), "species" = "Homo_sapiens")
 ```
 
 ```{r}
@@ -187,11 +200,13 @@ names(Hs_files) <- Hs_samples$SRA
 
 ```{r}
 # Load table with trx id and gene id corrspondence
-tx2gene <- read.csv("gencode.vM28.basic.trx_id-gene_id-no_ver.tsv",stringsAsFactors = F)
+#tx2gene <- read.csv("gencode.vM28.basic.trx_id-gene_id-no_ver.tsv",
+                    stringsAsFactors = F)
 
 # Run tximport
 # tx2gene links transcript IDs to gene IDs for summarization
-txi.kallisto <- tximport(Hs_files, type = "kallisto_quant", tx2gene = tx2gene, ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
+txi.kallisto <- tximport(Hs_files, type = "kallisto_quant", tx2gene = tx2gene,
+                         ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
 
 ```
 
@@ -210,7 +225,7 @@ colnames(txi.kallisto$counts) <-rownames(Hs_samples)
 
 ```{r}
 # Importacion de los datos convirtiendolos en un objeto que puede leer Deseq.
-ddsTxi_all       <- DESeqDataSetFromTximport(txi.kallisto, Hs_samples, design = ~ dex) # Create a DESeq object from the tximport data
+ddsTxi_all <- DESeqDataSetFromTximport(txi.kallisto, Hs_samples, design = ~ dex) # Create a DESeq object from the tximport data
 
 # Prefiltrado, eliminacion de genes con bajas cuentas
 keep                <- rowSums(counts(ddsTxi_all)) >= 10
@@ -237,13 +252,15 @@ mcols(res_all)$description # contraste shoot vs root
 
 # extraer UP
 all_de_gene_matrix_UP  <- subset(res_all, padj < 0.05 & log2FoldChange >= 0.5)
-write.table(all_de_gene_matrix_UP,file ="./all_DEG_kallisto_BlueLight.tsv", quote=FALSE, sep="\t")
+write.table(all_de_gene_matrix_UP,file ="./DE_files/all_DEG_kallisto_BlueLight.tsv",
+            quote=FALSE, sep="\t")
 # Extraer nombres
 all_de_gene_names_UP <- rownames(all_de_gene_matrix_UP)
 
 # extraer down genes
 all_de_gene_matrix_DOWN  <- subset(res_all, padj < 0.05 & log2FoldChange < -0.5)
-write.table(all_de_gene_matrix_DOWN,file ="./all_DEG_kallisto_Control.tsv", quote=FALSE, sep="\t")
+write.table(all_de_gene_matrix_DOWN,file ="./all_DEG_kallisto_Control.tsv",
+            quote=FALSE, sep="\t")
 # Extraer nombres
 all_de_gene_names_DOWN <- rownames(all_de_gene_matrix_DOWN)
 
@@ -270,7 +287,8 @@ de$names[filter] <- rownames(de)[filter]
 # grafica
 png(file = "volcano-covid.png",
     width = 800, height = 800) # guardar el plot en formato png
-ggplot(data=de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed, label=names)) +
+ggplot(data=de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed,
+                    label=names)) +
     geom_point() +
     scale_color_manual(values=c("blue", "black", "red")) + # cambiar colores de puntos
     theme_minimal() +
@@ -289,8 +307,8 @@ select <- order(rowMeans(counts(dds_all,normalized=TRUE)),
 df <- as.data.frame(colData(dds_all)[,c("dex", "sample")])
 
 #heatmap
-pheatmap(assay(all_normalized)[select,], cluster_rows=FALSE, show_rownames=FALSE,
-         cluster_cols=FALSE, annotation_col=df)
+pheatmap(assay(all_normalized)[select,], cluster_rows=FALSE,
+         show_rownames=FALSE, cluster_cols=FALSE, annotation_col=df)
 ```
 
 # Resultados
