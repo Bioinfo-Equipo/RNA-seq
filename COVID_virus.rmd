@@ -97,6 +97,16 @@ done
 El script no es tan complicado. ```./data``` es el directorio con todos los 
 archivos crudos descargados de SRA.
 
+Donde:
+
+- ```PE``` es para decir que el input sera un archivo paired end
+- ```phred33``` especifica la calidad de las bases
+- ```threads``` indica el número de núcleos que se van a utilizar
+- ```ILLUMINACLIP``` es para indicar los adaptadores y otras secuencias específicas de illumina
+- ```LEADING``` es para cortar las bases del comienzo de una lectura, si está por debajo de un umbral de calidad
+- ```TRAILING``` es para cortar las bases del final de una lectura, si está por debajo de un umbral de calidad
+- ```SLIDINGWINDOW``` recorta la lectura una vez que la calidad promedio dentro de la ventana cae por debajo de un umbral
+- ```MINLEN``` descarta la lectura si está por debajo de una longitud especificada
 
 
 
@@ -171,7 +181,7 @@ Hs_metadata.tsv = data.frame(
 # Anotacion articulo
 # Cargar los archivos por nombre del archivo (ubicacion empleando la anotacion de los 224 transcriptomas) 
 Hs_samples <- Hs_metadata.tsv
-Hs_files   <- file.path("./kallisto", Hs_samples$SRA,"abundance.tsv")
+Hs_files   <- file.path("./kallisto_quant", Hs_samples$SRA,"abundance.tsv")
 names(Hs_files) <- Hs_samples$SRA
 ```
 
@@ -181,7 +191,7 @@ tx2gene <- read.csv("gencode.vM28.basic.trx_id-gene_id-no_ver.tsv",stringsAsFact
 
 # Run tximport
 # tx2gene links transcript IDs to gene IDs for summarization
-txi.kallisto <- tximport(Hs_files, type = "kallisto", tx2gene = tx2gene, ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
+txi.kallisto <- tximport(Hs_files, type = "kallisto_quant", tx2gene = tx2gene, ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
 
 ```
 
