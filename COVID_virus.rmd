@@ -117,7 +117,7 @@ ln -s /mnt/Timina/bioinfoII/rnaseq/BioProject_2023/examples_class/Human_cells_ex
 
 Después, generamos el index de Kallisto con
 ```
-kallisto index -i ./kallisto_quant/Hs_ref.kidx gencode.vM28.transcripts.fa.gz
+kallisto index -i ./kallisto_quant/Hs_ref.kidx gencode.v43.transcripts.fa.gz
 ```
 
 Posteriormente, se crearon directorios individuales para cada muestra dentro de 
