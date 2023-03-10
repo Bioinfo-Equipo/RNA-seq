@@ -117,7 +117,7 @@ ln -s /mnt/Timina/bioinfoII/rnaseq/BioProject_2023/examples_class/Human_cells_ex
 
 Después, generamos el index de Kallisto con
 ```
-kallisto index -i ./kallisto_quant/Hs_ref.kidx gencode.v43.transcripts.fa.gz
+kallisto index -i ./kallisto_quant/Hs_ref.kidx gencode.vM28.transcripts.fa.gz
 ```
 
 Posteriormente, se crearon directorios individuales para cada muestra dentro de 
@@ -156,13 +156,15 @@ library(rhdf5)
 ```{r}
 # generar tabla de metadatos
 
+
+
+
 Hs_metadata.tsv = data.frame(
   "SRA" = c("SRR20114180","SRR20114179", "SRR20114178", "SRR20114177",
             "SRR20114176","SRR20114175", "SRR20114174", "SRR20114173",
             "SRR20114172", "SRR20114171"), 
   "sample" = c("control_1","control_2","control_3", "patient_1", "patient_2", 
-               "patient_3", "patient_4", "patient_5", "patient_6", "patient_7"),
-  "dex" = c(rep("control",3), rep("patient",7)), "species" = "Homo_sapiens")
+               "patient_3", "patient_4", "patient_5", "patient_6", "patient_7"), "dex" = c(rep("control",3), rep("patient",7)), "species" = "Homo_sapiens")
 ```
 
 ```{r}
