@@ -110,7 +110,8 @@ El script no es tan complicado, donde:
 
 ### Analisis de calidad de las lecturas sin adaptadores
 
-Se realizó el mismo procedimiento que con los datos crudos.
+Se realizó el mismo procedimiento que con los datos crudos, pero ahora con las
+lecturas sin adaptadores.
 
 
 ## Ensamblaje con el transcriptoma de referencia
@@ -139,7 +140,7 @@ estructura:
 kallisto quant -i ./kallisto_quant/Hs_ref.kidx -o ./kallisto_quant/SRR20114171 -t 25 ./data_trimmed/SRR20114171_1_trimmed.fastq.gz ./data_trimmed/SRR20114171_2_trimmed.fastq.gz
 ```
 
-Donde ```-i``` indica el índice, ```-o``` el directorio de salido, ```-t```
+Donde ```-i``` indica el índice, ```-o``` el directorio de salida, ```-t```
 el número de núcleos a usar y los otros dos archivos son el par de reads.
 
 El output de kallisto son tres archivos: un json llamado ```un_info.json```,
@@ -151,11 +152,9 @@ de la abundancia, estimados de bootstrap y longitud de los transcritos llamado
 
 ## Expresión diferencial
 
-### Efra
-
 ### Importación de los datos de kallisto
 
-```{r include=FALSE}
+```{r libraries, include=FALSE}
 library(tximport)
 library(tidyverse)
 library(DESeq2)
@@ -167,9 +166,10 @@ library(GenomicFeatures)
 
 
 El primer paso para hacer en análisis de expresión diferencial fue importar los
-datos de la cuantificación de kallisto.
+datos de la cuantificación de kallisto. Para eso, antes hay que crear una tabla
+```tx2gene```, que mapea genes con transcritos.
 
-```{r warning=FALSE}
+```{r tx2gene, warning=FALSE, message = FALSE}
 ## Creación del archivo tx2gene a partir de los archivos de anotación de 
 ## GENCODE. Se usó la versión 43, la misma usada durante el transcriptoma
 ## de referencia
@@ -177,8 +177,13 @@ txdb = makeTxDbFromGFF(file = "gencode.v43.chr_patch_hapl_scaff.annotation.gtf.g
 #saveDb(x = txdb, file = "gencode.v43.basic.annotation.gtf.gz")
 k = keys(txdb, keytype = "TXNAME")
 tx2gene = select(txdb, k, "GENEID", "TXNAME")
+head(tx2gene)
+```
 
 
+Ahora, ya podemos importar la información de kallisto:
+
+```{r kallisto-import, message=FALSE}
 ## Guardado en una variable de los paths hacia los archivos h5
 files = file.path(list.dirs("./kallisto_quant", recursive = FALSE),
                   "abundance.h5")
@@ -188,25 +193,18 @@ names(files) = str_extract(files, "SRR\\d+")
 txi.kallisto.tsv = tximport(files, type = "kallisto", tx2gene = tx2gene,
                             ignoreAfterBar = TRUE)
 
-## Conteos de los primeros transcriptomas
+## Conteos de los primeros transcritos
 head(txi.kallisto.tsv$counts)
-
 ```
 
-### Normalización y DE
-
-Antes de visualizar los resultados y hacer el análisis de expresión diferencial,
-es necesario normalizar. El método que usa DESEq2 para normalizar es apto para
-continuar con al DE analysis.
-
-Para eso, primero hay que crear un objeto tipo data set de DESeq2. DESeq2 
-necesita saber el tratamiento caso/control de cada muestra. Para saber eso,
-descargamos la tabla de metadatos disponible en 
+Ahora, hay que crear un objeto tipo data set de DESeq2, llamado DESeqDataSet.
+DESeq2 necesita saber el tratamiento caso/control de cada muestra. Para saber eso,
+descargamos la tabla de metadatos disponibles en 
 [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA858106&o=acc_s%3Aa),
 con el nombre de ```metadata.csv```.
 
 
-```{r warning=FALSE}
+```{r dds-creation, warning=FALSE, message=FALSE}
 ## Importación de metadatos a R
 meta = read.csv("metadata.csv", header = TRUE)
 samples = column_to_rownames(meta, var = "Run")
@@ -215,54 +213,53 @@ samples = column_to_rownames(meta, var = "Run")
 dds = DESeqDataSetFromTximport(txi.kallisto.tsv,
                                colData = samples,
                                design = ~disease_state)
-
 ```
 
-Una vez que tenemos nuestro DESeqDataSet, hacemos un pre-filtrado con conteos
-bajos.
 
-```{r message=FALSE}
+
+## Análisis exploratorio
+
+Primero, hay que pre-filtrar los conteos bajos, con el siguiente código:
+
+```{r pre-filtering, message=FALSE, warning=FALSE}
 ## Pre-filtering
 keep = rowSums(counts(dds)) >= 10
 dds = dds[keep, ]
 
 ## Factor level
 dds$disease_state = factor(dds$disease_state, levels = c("normal", "Covid-19"))
+```
+
+Para poder identificar algún *batch effect* se graficó un PCA, que se muestra en
+la sección de resultados. Antes de relizar esa visualización, se normalizó
+el objeto ```dds``` con la *variance stabilizing transformation*:
+
+```{r variance-stabilizing-transformation, message=FALSE}
+vst = vst(dds, blind = FALSE)
+```
+
+
+
+
+
+## DE
+
+Una vez que vimos que no habían anomalías en el dataset, hicimos el análisis.
+Para correr el análisis de expresión diferencial, se usa la siguiente función:
+
+```{r DESeq, message=FALSE}
 dds = DESeq(dds)
 ```
 
-Los resultados del modelo son los siguientes
 
-```{r}
+Los resultados del modelo son los siguientes, con un nivel de significancia de 
+$\alpha=0.01$:
+
+```{r res, }
 res = results(dds, alpha = 0.01)
 res
 ```
 
-
-```{r}
-library(apeglm)
-# resLFC = lfcShrink(dds, coef = "disease_state_Covid.19_vs_normal", type = "apeglm")
-plotMA(res)
-```
-
-
-```{r}
-library(ggrepel)
-
-de = as.data.frame(res)
-
-de$diffexpressed = "NO"
-
-de$diffexpressed[de$log2FoldChange > 0.6 & de$pvalue < 0.01] <- "UP"
-
-de$diffexpressed[de$log2FoldChange < -0.6 & de$pvalue < 0.01] <- "DOWN"
-
-
-
-ggplot(data = de, aes(x=log2FoldChange, y=-log10(pvalue))) + 
-  geom_point() 
-  
-```
 
 
 
@@ -270,92 +267,92 @@ ggplot(data = de, aes(x=log2FoldChange, y=-log10(pvalue))) +
 ### Fer
 
 ```{r}
-library(biomaRt)
-ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl")
-head(listAttributes(ensembl))
-head(listFilters(ensembl))
-```
-```{r echo=FALSE}
-library(tximport)
-library(tidyverse)
-library(DESeq2)
-library(ggplot2)
-library(ggrepel) # libreria que evita el overlap de texto en labels
-library(rhdf5)
-```
+# library(biomaRt)
+# ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+# head(listAttributes(ensembl))
+# head(listFilters(ensembl))
+# ```
+# ```{r echo=FALSE}
+# library(tximport)
+# library(tidyverse)
+# library(DESeq2)
+# library(ggplot2)
+# library(ggrepel) # libreria que evita el overlap de texto en labels
+# library(rhdf5)
+# ```
+# 
+# ```{r}
+# etID_egID <- getBM(attributes=c('ensembl_transcript_id','ensembl_gene_id'),  mart = ensembl) %>% relocate(ensembl_transcript_id)
+# 
+# etID_hgnc <- getBM(attributes=c('ensembl_transcript_id', 'hgnc_symbol'), mart = ensembl)
+# ```
+# 
+# ```{r}
+# # generar tabla de metadatos
+# metadata.tsv <- data.frame("SRA" =c("SRR20114180","SRR20114179", "SRR20114178", "SRR20114177", "SRR20114176",
+#                                           "SRR20114175", "SRR20114174", "SRR20114173", "SRR20114172", "SRR20114171"), "sample" = c("control_1","control_2","control_3", "patient_1", "patient_2", "patient_3", "patient_4", "patient_5", "patient_6", "patient_7") , "dex" = c(rep("control",3), rep("patient",7)), "species" = "Homo_sapiens")
+# ```
+# 
+# ```{r}
+# # Anotacion articulo
+# # Cargar los archivos por nombre del archivo (ubicacion empleando la anotacion de los 224 transcriptomas) 
+# samples <- metadata.tsv
+# files   <- file.path("./kallisto_quant", samples$SRA,"abundance.tsv")
+# names(files) <- samples$SRA
+# ```
+# 
+# ```{r}
+# # Load table with trx id and gene id corrspondence
+# tx2gene <- etID_egID
+# # Load table with trx id and gene name corrspondence
+# tx2genename <- etID_hgnc
+# 
+# # Run tximport
+# # tx2gene links transcript IDs to gene IDs for summarization
+# txi.kallisto <- tximport(files, type = "kallisto", tx2gene = tx2gene, ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
+# txi.kallisto.name <- tximport(files, type = "kallisto", tx2gene = tx2genename, ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
+# ```
+# 
+# 
+# ```{r}
+# names(txi.kallisto)
+# ```
+# 
+# ```{r}
+# head(txi.kallisto$counts)
+# ```
+# 
+# ```{r}
+# # nombre de los transcriptomas
+# rownames(samples) <- samples$sample
+# colnames(txi.kallisto$counts) <-rownames(samples) 
+# ```
+# 
+# ```{r echo=FALSE}
+# # Importacion de los datos convirtiendolos en un objeto que puede leer Deseq.
+# ddsTxi_all <- DESeqDataSetFromTximport(txi.kallisto, samples, design = ~ dex) # Create a DESeq object from the tximport data
+# ```
+# 
+# ```{r echo=FALSE}
+# # Prefiltrado, eliminacion de genes con bajas cuentas
+# keep  <- rowSums(counts(ddsTxi_all)) >= 10
+# ddsTxi_all  <- ddsTxi_all[keep,] 
+# dds_all <- DESeq(ddsTxi_all) # run Differential expression analysis
+# ```
+# 
+# ```{r}
+# res <- results(dds_all)
+# res
+# ```
+# 
+# ```{r}
+# summary(res)
+# ```
 
 ```{r}
-etID_egID <- getBM(attributes=c('ensembl_transcript_id','ensembl_gene_id'),  mart = ensembl) %>% relocate(ensembl_transcript_id)
-
-etID_hgnc <- getBM(attributes=c('ensembl_transcript_id', 'hgnc_symbol'), mart = ensembl)
-```
-
-```{r}
-# generar tabla de metadatos
-metadata.tsv <- data.frame("SRA" =c("SRR20114180","SRR20114179", "SRR20114178", "SRR20114177", "SRR20114176",
-                                          "SRR20114175", "SRR20114174", "SRR20114173", "SRR20114172", "SRR20114171"), "sample" = c("control_1","control_2","control_3", "patient_1", "patient_2", "patient_3", "patient_4", "patient_5", "patient_6", "patient_7") , "dex" = c(rep("control",3), rep("patient",7)), "species" = "Homo_sapiens")
-```
-
-```{r}
-# Anotacion articulo
-# Cargar los archivos por nombre del archivo (ubicacion empleando la anotacion de los 224 transcriptomas) 
-samples <- metadata.tsv
-files   <- file.path("./kallisto_quant", samples$SRA,"abundance.tsv")
-names(files) <- samples$SRA
-```
-
-```{r}
-# Load table with trx id and gene id corrspondence
-tx2gene <- etID_egID
-# Load table with trx id and gene name corrspondence
-tx2genename <- etID_hgnc
-
-# Run tximport
-# tx2gene links transcript IDs to gene IDs for summarization
-txi.kallisto <- tximport(files, type = "kallisto", tx2gene = tx2gene, ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
-txi.kallisto.name <- tximport(files, type = "kallisto", tx2gene = tx2genename, ignoreAfterBar=TRUE, ignoreTxVersion=TRUE)
-```
-
-
-```{r}
-names(txi.kallisto)
-```
-
-```{r}
-head(txi.kallisto$counts)
-```
-
-```{r}
-# nombre de los transcriptomas
-rownames(samples) <- samples$sample
-colnames(txi.kallisto$counts) <-rownames(samples) 
-```
-
-```{r echo=FALSE}
-# Importacion de los datos convirtiendolos en un objeto que puede leer Deseq.
-ddsTxi_all <- DESeqDataSetFromTximport(txi.kallisto, samples, design = ~ dex) # Create a DESeq object from the tximport data
-```
-
-```{r echo=FALSE}
-# Prefiltrado, eliminacion de genes con bajas cuentas
-keep  <- rowSums(counts(ddsTxi_all)) >= 10
-ddsTxi_all  <- ddsTxi_all[keep,] 
-dds_all <- DESeq(ddsTxi_all) # run Differential expression analysis
-```
-
-```{r}
-res <- results(dds_all)
-res
-```
-
-```{r}
-summary(res)
-```
-
-```{r}
-resSig <- subset(res, padj < 0.1) # subset
-head(resSig[ order(resSig$log2FoldChange), ]) # more downregulated genes
-head(resSig[ order(resSig$log2FoldChange, decreasing = TRUE), ]) # genes more upregulated
+# resSig <- subset(res, padj < 0.1) # subset
+# head(resSig[ order(resSig$log2FoldChange), ]) # more downregulated genes
+# head(resSig[ order(resSig$log2FoldChange, decreasing = TRUE), ]) # genes more upregulated
 ```
 
 ### Expresion diferencial (TODOS LOS TRANSCRITOS)
@@ -436,19 +433,23 @@ head(resSig[ order(resSig$log2FoldChange, decreasing = TRUE), ]) # genes more up
 
 # Resultados
 
+
 ## Análisis de calidad de datos crudos
 
 
 Todo el resumen de la calidad de los datos crudos se encuentra [aquí](QC/QC_rawData/multiqc_report.html).
 
 
-Todos los resultados se encuentran dentro del DNA HPCC en la ruta
-```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_rawData.```
+Todos los resultados se encuentran dentro del DNA HPCC en la ruta siguiente ruta:
+```
+/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_rawData
+```
 
 
 
 
 ## Análisis de calidad de los datos sin adaptadores
+
 
 
 Como podemos ver en la siguiente gráfica, la calidad media de cada base de
@@ -486,8 +487,58 @@ ya que estamos anlizando datos de transcripción.
 ![](QC/QC_trimmedData/fastqc_sequence_duplication_levels_plot.png)
 
 Todos los resultados, tanto individuales de cada fastqc como del multiqc, se encuentran
-dentro del DNA HPCC en la ruta
-```/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_trimmed```
+dentro del DNA HPCC en la ruta:
+```
+/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_trimmed
+```
+
+
+## Análisis exploratorio
+
+### PCA
+
+```{r PCA, echo=FALSE}
+plotPCA(vst, intgroup = "disease_state")
+```
+
+
+
+## DE
+
+### MA-plot
+
+
+```{r MA-plot}
+plotMA(res)
+```
+
+
+
+### Volcano plot
+
+
+
+
+
+
+```{r volcano, warning=FALSE}
+
+de = as.data.frame(res)
+
+de$diffexpressed = "NO"
+
+de$diffexpressed[de$log2FoldChange > 0.6 & de$pvalue < 0.01] <- "UP"
+
+de$diffexpressed[de$log2FoldChange < -0.6 & de$pvalue < 0.01] <- "DOWN"
+
+
+
+ggplot(data = de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed)) + 
+  geom_point() 
+  
+```
+
+
 
 
 # Discusión
