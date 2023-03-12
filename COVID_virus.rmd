@@ -153,31 +153,125 @@ de la abundancia, estimados de bootstrap y longitud de los transcritos llamado
 
 ### Efra
 
+### Importación de los datos de kallisto
 
-```{r echo=FALSE}
+```{r include=FALSE}
 library(tximport)
 library(tidyverse)
 library(DESeq2)
 library(ggplot2)
 library(ggrepel) # libreria que evita el overlap de texto en labels
 library(rhdf5)
+library(GenomicFeatures)
+```
+
+
+El primer paso para hacer en análisis de expresión diferencial fue importar los
+datos de la cuantificación de kallisto.
+
+```{r warning=FALSE}
+## Creación del archivo tx2gene a partir de los archivos de anotación de 
+## GENCODE. Se usó la versión 43, la misma usada durante el transcriptoma
+## de referencia
+txdb = makeTxDbFromGFF(file = "gencode.v43.chr_patch_hapl_scaff.annotation.gtf.gz")
+saveDb(x = txdb, file = "gencode.v43.chr_patch_hapl_scaff.annotation.gtf.gz")
+k = keys(txdb, keytype = "TXNAME")
+tx2gene = select(txdb, k, "GENEID", "TXNAME")
+
+
+## Guardado en una variable de los paths hacia los archivos h5
+files = file.path(list.dirs("./kallisto_quant", recursive = FALSE),
+                  "abundance.h5")
+names(files) = str_extract(files, "SRR\\d+")
+
+## Importación de la información
+txi.kallisto.tsv = tximport(files, type = "kallisto", tx2gene = tx2gene,
+                            ignoreAfterBar = TRUE)
+
+## Conteos de los primeros transcriptomas
+head(txi.kallisto.tsv$counts)
+
+```
+
+### Normalización y DE
+
+Antes de visualizar los resultados y hacer el análisis de expresión diferencial,
+es necesario normalizar. El método que usa DESEq2 para normalizar es apto para
+continuar con al DE analysis.
+
+Para eso, primero hay que crear un objeto tipo data set de DESeq2. DESeq2 
+necesita saber el tratamiento caso/control de cada muestra. Para saber eso,
+descargamos la tabla de metadatos disponible en 
+[SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA858106&o=acc_s%3Aa),
+con el nombre de ```metadata.csv```.
+
+
+```{r warning=FALSE}
+## Importación de metadatos a R
+meta = read.csv("metadata.csv", header = TRUE)
+samples = column_to_rownames(meta, var = "Run")
+
+## Creación del objeto DESeqDataSet
+dds = DESeqDataSetFromTximport(txi.kallisto.tsv,
+                               colData = samples,
+                               design = ~disease_state)
+
+```
+
+Una vez que tenemos nuestro DESeqDataSet, hacemos un pre-filtrado con conteos
+bajos.
+
+```{r message=FALSE}
+## Pre-filtering
+keep = rowSums(counts(dds)) >= 10
+dds = dds[keep, ]
+
+## Factor level
+dds$disease_state = factor(dds$disease_state, levels = c("normal", "Covid-19"))
+dds = DESeq(dds)
+```
+
+Los resultados del modelo son los siguientes
+
+```{r}
+res = results(dds, alpha = 0.01)
+res
 ```
 
 
 ```{r}
-files = file.path("/home/emp/Documents/LCG/4th/Bioinfo/github/RNA-seq/kallisto_quant",
-             list.dirs("/home/emp/Documents/LCG/4th/Bioinfo/github/RNA-seq/kallisto_quant"),
-             "abundance.h5")
-names(files) = str_extract(files, "SRR\\d+")
-
-txi.kallisto.tsv = tximport(files, type = "kallisto", tx2gene = tx2gene,
-                            ignoreAfterBar = TRUE)
+library(apeglm)
+# resLFC = lfcShrink(dds, coef = "disease_state_Covid.19_vs_normal", type = "apeglm")
+plotMA(res)
 ```
+
+
+```{r}
+library(ggrepel)
+
+de = as.data.frame(res)
+
+de$diffexpressed = "NO"
+
+de$diffexpressed[de$log2FoldChange > 0.6 & de$pvalue < 0.01] <- "UP"
+
+de$diffexpressed[de$log2FoldChange < -0.6 & de$pvalue < 0.01] <- "DOWN"
+
+
+
+ggplot(data = de, aes(x=log2FoldChange, y=-log10(pvalue))) + 
+  geom_point() 
+  geom_vline(xintercept=c(-0.6, 0.6), col="red") +
+  geom_hline(yintercept=-log10(0.05), col="red") +
+  xlim(-15,15)
+  
+```
+
+
 
 
 ### Fer
 
-## Expresión diferencial.
 ```{r}
 library(biomaRt)
 ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl")
@@ -298,7 +392,8 @@ head(all_normalized_db)
 
 ## PCA
 ```{r}
-plotPCA(all_normalized, intgroup=c("dex"))
+vst = vst(dds, blind = FALSE)
+plotPCA(vst, intgroup = "disease_state")
 ```
 
 ## Volcano plot
