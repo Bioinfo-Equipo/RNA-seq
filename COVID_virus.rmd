@@ -174,7 +174,7 @@ datos de la cuantificación de kallisto.
 ## GENCODE. Se usó la versión 43, la misma usada durante el transcriptoma
 ## de referencia
 txdb = makeTxDbFromGFF(file = "gencode.v43.chr_patch_hapl_scaff.annotation.gtf.gz")
-saveDb(x = txdb, file = "gencode.v43.chr_patch_hapl_scaff.annotation.gtf.gz")
+#saveDb(x = txdb, file = "gencode.v43.basic.annotation.gtf.gz")
 k = keys(txdb, keytype = "TXNAME")
 tx2gene = select(txdb, k, "GENEID", "TXNAME")
 
@@ -261,9 +261,6 @@ de$diffexpressed[de$log2FoldChange < -0.6 & de$pvalue < 0.01] <- "DOWN"
 
 ggplot(data = de, aes(x=log2FoldChange, y=-log10(pvalue))) + 
   geom_point() 
-  geom_vline(xintercept=c(-0.6, 0.6), col="red") +
-  geom_hline(yintercept=-log10(0.05), col="red") +
-  xlim(-15,15)
   
 ```
 
@@ -364,77 +361,77 @@ head(resSig[ order(resSig$log2FoldChange, decreasing = TRUE), ]) # genes more up
 ### Expresion diferencial (TODOS LOS TRANSCRITOS)
 
 ```{r}
-# extraer UP
-all_de_gene_matrix_UP  <- subset(res, padj < 0.05 & log2FoldChange >= 2)
-write.table(all_de_gene_matrix_UP,file ="./all_DEG_kallisto_Patients.tsv", quote=FALSE, sep="\t")
-# Extraer nombres
-all_de_gene_names_UP <- rownames(all_de_gene_matrix_UP)
-
-# extraer down genes
-all_de_gene_matrix_DOWN  <- subset(res, padj < 0.05 & log2FoldChange < -2)
-write.table(all_de_gene_matrix_DOWN,file ="./all_DEG_kallisto_Control.tsv", quote=FALSE, sep="\t")
-# Extraer nombres
-all_de_gene_names_DOWN <- rownames(all_de_gene_matrix_DOWN)
-
-# Numero de genes expresados
-length(all_de_gene_names_UP)
-length(all_de_gene_names_DOWN)
-```
-
-# Visualización gráfica
-
-**Cuentas normalizadas para graficas (rlog)**
-```{r}
-all_normalized <- rlog(dds_all, blind=FALSE) # result rld, vst
-all_normalized_db <- as.data.frame(assay(all_normalized))
-head(all_normalized_db)
-```
-
-## PCA
-```{r}
-vst = vst(dds, blind = FALSE)
-plotPCA(vst, intgroup = "disease_state")
-```
-
-## Volcano plot
-```{r}
-de <- as.data.frame(res_all)
-# add a column of NAs
-de$diffexpressed <- "NO"
-
-# if log2Foldchange > 0.6 and pvalue < 0.05, set as "UP" 
-de$diffexpressed[de$log2FoldChange > 2 & de$pvalue < 0.05] <- "UP"
-# if log2Foldchange < -0.6 and pvalue < 0.05, set as "DOWN"
-de$diffexpressed[de$log2FoldChange < -2 & de$pvalue < 0.05] <- "DOWN"
-# Create a new column "names" to de, that will contain the name of a subset if genes differentially expressed (NA in case they are not)
-de$names <- NA
-# filter for a subset of interesting genes
-filter <- which(de$diffexpressed != "NO" & de$padj < 0.05 & (de$log2FoldChange >= 5  | de$log2FoldChange <= -5))
-de$names[filter] <- rownames(de)[filter]
-
-# grafica
-png(file = "volcano-COVID.png",
-    width = 800, height = 800) # guardar el plot en formato png
-ggplot(data=de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed, label=names)) +
-    geom_point() +
-    scale_color_manual(values=c("blue", "black", "red")) + # cambiar colores de puntos
-    theme_minimal() +
-    geom_text_repel() +
-    xlim(-15,15)
-dev.off()
+# # extraer UP
+# all_de_gene_matrix_UP  <- subset(res, padj < 0.05 & log2FoldChange >= 2)
+# write.table(all_de_gene_matrix_UP,file ="./all_DEG_kallisto_Patients.tsv", quote=FALSE, sep="\t")
+# # Extraer nombres
+# all_de_gene_names_UP <- rownames(all_de_gene_matrix_UP)
+# 
+# # extraer down genes
+# all_de_gene_matrix_DOWN  <- subset(res, padj < 0.05 & log2FoldChange < -2)
+# write.table(all_de_gene_matrix_DOWN,file ="./all_DEG_kallisto_Control.tsv", quote=FALSE, sep="\t")
+# # Extraer nombres
+# all_de_gene_names_DOWN <- rownames(all_de_gene_matrix_DOWN)
+# 
+# # Numero de genes expresados
+# length(all_de_gene_names_UP)
+# length(all_de_gene_names_DOWN)
+# ```
+# 
+# # Visualización gráfica
+# 
+# **Cuentas normalizadas para graficas (rlog)**
+# ```{r}
+# all_normalized <- rlog(dds_all, blind=FALSE) # result rld, vst
+# all_normalized_db <- as.data.frame(assay(all_normalized))
+# head(all_normalized_db)
+# ```
+# 
+# ## PCA
+# ```{r}
+# vst = vst(dds, blind = FALSE)
+# plotPCA(vst, intgroup = "disease_state")
+# ```
+# 
+# ## Volcano plot
+# ```{r}
+# de <- as.data.frame(res_all)
+# # add a column of NAs
+# de$diffexpressed <- "NO"
+# 
+# # if log2Foldchange > 0.6 and pvalue < 0.05, set as "UP" 
+# de$diffexpressed[de$log2FoldChange > 2 & de$pvalue < 0.05] <- "UP"
+# # if log2Foldchange < -0.6 and pvalue < 0.05, set as "DOWN"
+# de$diffexpressed[de$log2FoldChange < -2 & de$pvalue < 0.05] <- "DOWN"
+# # Create a new column "names" to de, that will contain the name of a subset if genes differentially expressed (NA in case they are not)
+# de$names <- NA
+# # filter for a subset of interesting genes
+# filter <- which(de$diffexpressed != "NO" & de$padj < 0.05 & (de$log2FoldChange >= 5  | de$log2FoldChange <= -5))
+# de$names[filter] <- rownames(de)[filter]
+# 
+# # grafica
+# png(file = "volcano-COVID.png",
+#     width = 800, height = 800) # guardar el plot en formato png
+# ggplot(data=de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed, label=names)) +
+#     geom_point() +
+#     scale_color_manual(values=c("blue", "black", "red")) + # cambiar colores de puntos
+#     theme_minimal() +
+#     geom_text_repel() +
+#     xlim(-15,15)
+# dev.off()
 ```
 
 ## Heatmap
 ```{r}
-library("pheatmap")
-# los primeros 20 genes
-select <- order(rowMeans(counts(dds_all,normalized=TRUE)),
-                decreasing=TRUE)[1:20]
-df <- as.data.frame(colData(dds_all)[,c("dex", "sample")])
-
-#heatmap
-pheatmap(assay(all_normalized)[select,], cluster_rows=FALSE, show_rownames=FALSE,
-         cluster_cols=FALSE, annotation_col=df)
+# library("pheatmap")
+# # los primeros 20 genes
+# select <- order(rowMeans(counts(dds_all,normalized=TRUE)),
+#                 decreasing=TRUE)[1:20]
+# df <- as.data.frame(colData(dds_all)[,c("dex", "sample")])
+# 
+# #heatmap
+# pheatmap(assay(all_normalized)[select,], cluster_rows=FALSE, show_rownames=FALSE,
+#          cluster_cols=FALSE, annotation_col=df)
 ```
 
 # Resultados
