@@ -162,6 +162,8 @@ library(ggplot2)
 library(ggrepel) # libreria que evita el overlap de texto en labels
 library(rhdf5)
 library(GenomicFeatures)
+library(dplyr)
+
 ```
 
 
@@ -255,9 +257,8 @@ dds = DESeq(dds)
 Los resultados del modelo son los siguientes, con un nivel de significancia de 
 $\alpha=0.01$:
 
-```{r res, }
-res = results(dds, alpha = 0.01)
-res
+```{r res}
+(res = results(dds, alpha = 0.01))
 ```
 
 
@@ -503,7 +504,40 @@ plotPCA(vst, intgroup = "disease_state")
 
 
 
-## DE
+## Expresión diferencial
+
+
+### Extracción de los genes sobreexpresados e infraexpresados
+
+Una vez que tenemos los *p*-valores para todos los genes, solo nos interesan los
+más significativos. Extraemos los más expresados durante
+el caso y los menos expresados, en dos archivos respectivamente: ```UP_genes.tsv```
+y ```DOWN_genes.tsv```.
+
+```{r resSig-extract}
+## Significative genes
+resSig = subset(res, padj < 0.01)
+
+
+## Up genes
+resSigUP = subset(resSig, log2FoldChange >= 1)
+resSigUP = cbind(rownames(resSigUP), resSigUP) # Converts rownames into first column
+colnames(resSigUP)[1] = "GENE_ID" # Adds name to first column
+
+write.table(resSigUP, file = "./DEG_results/UP_genes.tsv", quote = FALSE,
+            sep = "\t",row.names = FALSE)
+
+
+## Down genes
+resSigDOWN = subset(resSig, log2FoldChange <= -1)
+resSigDOWN = cbind(rownames(resSigDOWN), resSigDOWN)
+colnames(resSigDOWN)[1] = "GENE_ID"
+
+write.table(resSigDOWN, file = "./DEG_results/DOWN_genes.tsv", quote = FALSE,
+            sep = "\t",row.names = FALSE)
+```
+
+
 
 ### MA-plot
 
