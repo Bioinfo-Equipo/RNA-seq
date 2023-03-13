@@ -153,15 +153,15 @@
 # dev.off()
 ## Heatmap
 # library("pheatmap")
-# # los primeros 20 genes
-# select <- order(rowMeans(counts(dds_all,normalized=TRUE)),
-#                 decreasing=TRUE)[1:20]
-# df <- as.data.frame(colData(dds_all)[,c("dex", "sample")])
-# 
-# #heatmap
-# pheatmap(assay(all_normalized)[select,], cluster_rows=FALSE, show_rownames=FALSE,
-#          cluster_cols=FALSE, annotation_col=df)
+# los primeros 20 genes
+select <- order(rowMeans(counts(dds ,normalized=TRUE)),
+                decreasing=TRUE)[1:20]
+df <- as.data.frame(colData(dds)[,c("disease_state")])
+
+#heatmap
+pheatmap(assay(vst)[select,], cluster_rows=FALSE, show_rownames=T,
+         cluster_cols=FALSE)
 
 
-
+## heatmap attempt
 

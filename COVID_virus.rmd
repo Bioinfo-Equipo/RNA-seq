@@ -114,7 +114,7 @@ Se realizó el mismo procedimiento que con los datos crudos, pero ahora con las
 lecturas sin adaptadores.
 
 
-## Ensamblaje con el transcriptoma de referencia
+## Mapeo con el transcriptoma de referencia
 
 Descargamos el transcriptoma de referencia en el directorio donde 
 se correra kallisto, *i. e.*, en 
@@ -166,7 +166,7 @@ library(dplyr)
 library(biomaRt)
 library(gprofiler2)
 library(ComplexHeatmap)
-
+library(genefilter)
 ```
 
 
@@ -179,7 +179,7 @@ datos de la cuantificación de kallisto. Para eso, antes hay que crear una tabla
 ## GENCODE. Se usó la versión 43, la misma usada durante el transcriptoma
 ## de referencia
 txdb = makeTxDbFromGFF(file = "downloads/gencode.v43.chr_patch_hapl_scaff.annotation.gtf.gz")
-#saveDb(x = txdb, file = "gencode.v43.basic.annotation.gtf.gz")
+#saveDb(x = txdb, file = "gencode.v43.basic.annotation.gtf.gz") <- funcion que no dejaba renderizar hacia HTML
 k = keys(txdb, keytype = "TXNAME")
 tx2gene = select(txdb, k, "GENEID", "TXNAME")
 head(tx2gene)
@@ -278,8 +278,8 @@ $\alpha=0.01$:
 
 ## Análisis de calidad de datos crudos
 
-
-Todo el resumen de la calidad de los datos crudos se encuentra [aquí](QC/QC_rawData/multiqc_report.html).
+Haremos énfasis en la calidad de las *reads* sin adaptadores.
+Todo el resumen de la calidad de los datos crudos se encuentra [aquí](QC/QC_rawData/multiqc_report.html). 
 
 
 Todos los resultados se encuentran dentro del DNA HPCC en la ruta siguiente ruta:
@@ -287,7 +287,8 @@ Todos los resultados se encuentran dentro del DNA HPCC en la ruta siguiente ruta
 /mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/FastQC_rawData
 ```
 
-
+En general, la calidad de las lecturas crudas fue bastante buena, por lo que
+pudimos continuar con el pipeline.
 
 
 ## Análisis de calidad de los datos sin adaptadores
@@ -339,9 +340,24 @@ dentro del DNA HPCC en la ruta:
 
 ### PCA
 
+Una manera estándar para hacer el análisis exploratorio de los datos es graficar
+un PCA.
+
 ```{r PCA, echo=FALSE}
 plotPCA(vst, intgroup = "disease_state")
 ```
+
+Como podemos observar, no hay nada que nos haga pensar en algún batch effect.
+En su defecto, vemos como una muestra es un outlier. Para identificarla, 
+imprimimos la lista de los dos primeros componentes principales.
+
+
+```{r PC, echo=FALSE}
+PC = plotPCA(vst, intgroup = "disease_state", returnData = T)
+PC[, c(1,2)]
+```
+
+Como se muestra, el outlier es la muestra SRR20114175.
 
 
 
@@ -381,7 +397,7 @@ write.table(resSigDOWN, file = "./DEG_results/DOWN_genes.tsv", quote = FALSE,
 Ambos archivos se encuentran en el DNA HPCC en el siguiente directorio:
 
 ```
-
+/mnt/Timina/bioinfoII/rnaseq/BioProject_2023/rawData/COVID_virus/DEG_results
 ```
 
 
@@ -389,8 +405,14 @@ Ambos archivos se encuentran en el DNA HPCC en el siguiente directorio:
 ### MA-plot
 
 
+
 ```{r MA-plot, echo=FALSE}
 plotMA(res)
+```
+
+
+```{r MA-plot-sig, echo=FALSE}
+plotMA(resSig)
 ```
 
 
@@ -429,9 +451,9 @@ un heatmap con TODOS los genes, como se muestra a continuación:
 ![](Images/full_heatmap.png)
 
 Sin embargo, al tener todos los genes graficados, hay mucho ruido y es difícil
-de interpretar i visualizar. Sin embargo, podemos apreciar como la muestra 
+de interpretar la visualizar. Sin embargo, podemos apreciar como la muestra 
 SRR20114175 es la más diferente de todas y la última en unirse al dendograma.
-Posiblemente sea el outlier que identificamos en el PCA.
+Es el mismo outlier que identificamos en el PCA.
 
 
 Ahora, podemos visualizar el heatmap solamente con los genes que consideramos
@@ -441,7 +463,7 @@ mayor a 1 o menor a -1.
 ```{r heatmap-sig, echo=FALSE}
 resSig.df = as.data.frame(resSig)
 
-mat = counts(dds, normalized = TRUE)[rownames(resSig.df), ]
+# mat = counts(dds, normalized = TRUE)[rownames(resSig.df), ]
 
 mat.z = t(apply(mat, 1, scale))
 colnames(mat.z) = colnames(dds)
@@ -454,11 +476,30 @@ Heatmap(mat.z, cluster_columns = T, cluster_rows = T, name = "Z-score")
 Como se puede apreciar, las muestras de control (SRR20114178, SRR20114179 y
 SRR20114180) forman su propio clúster más rápido. Además, la diferencia entre
 ambos tratamientos es más visible. Una vez más, observamos como la muestra 
-SRR20114175 difiere del resto en un cluster de genes.
+SRR20114175 difiere del resto en un clúster de genes.
 
 
 Finalmente, podemos tener aún más resolución
 
+
+
+```{r heatmap-top, echo=FALSE}
+### Failed attempt with most variable genes
+# topVarGenes = head(order(rowVars(assay(vst)), decreasing = TRUE), 20)
+# mat2 = assay(vst)[topVarGenes, ]
+# mat2 = mat2 - rowMeans(mat2)
+# anno = as.data.frame(colData(vst)[, "disease_state"])
+# pheatmap(mat2, annotation_col = anno)
+################################################
+
+
+select = order(rowMeans(counts(dds ,normalized=TRUE)),
+                decreasing=TRUE)[1:20]
+df = as.data.frame(colData(dds)[,c("disease_state")])
+
+#heatmap
+pheatmap(assay(vst)[select,])
+```
 
 
 
