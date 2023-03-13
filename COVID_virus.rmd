@@ -154,7 +154,7 @@ de la abundancia, estimados de bootstrap y longitud de los transcritos llamado
 
 ### Importación de los datos de kallisto
 
-```{r libraries, include=FALSE}
+```{r libraries, include=FALSE, warning=FALSE, message=FALSE}
 library(tximport)
 library(tidyverse)
 library(DESeq2)
@@ -163,6 +163,9 @@ library(ggrepel) # libreria que evita el overlap de texto en labels
 library(rhdf5)
 library(GenomicFeatures)
 library(dplyr)
+library(biomaRt)
+library(gprofiler2)
+library(ComplexHeatmap)
 
 ```
 
@@ -244,7 +247,7 @@ vst = vst(dds, blind = FALSE)
 
 
 
-## DE
+## Análisis de expresión diferencial
 
 Una vez que vimos que no habían anomalías en el dataset, hicimos el análisis.
 Para correr el análisis de expresión diferencial, se usa la siguiente función:
@@ -537,12 +540,18 @@ write.table(resSigDOWN, file = "./DEG_results/DOWN_genes.tsv", quote = FALSE,
             sep = "\t",row.names = FALSE)
 ```
 
+Ambos archivos se encuentran en el DNA HPCC en el siguiente directorio:
+
+```
+
+```
+
 
 
 ### MA-plot
 
 
-```{r MA-plot}
+```{r MA-plot, echo=FALSE}
 plotMA(res)
 ```
 
@@ -555,7 +564,8 @@ plotMA(res)
 
 
 
-```{r volcano, warning=FALSE}
+
+```{r volcano, warning=FALSE, echo=FALSE}
 
 de = as.data.frame(res)
 
@@ -571,6 +581,23 @@ ggplot(data = de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed)) +
   geom_point() 
   
 ```
+
+
+### Gene clustering
+
+```{r heatmap-sig, echo=FALSE}
+resSig.df = as.data.frame(resSig)
+
+mat = counts(dds, normalized = TRUE)[rownames(resSig.df), ]
+
+mat.z = t(apply(mat, 1, scale))
+colnames(mat.z) = colnames(dds)
+
+rownames(mat.z) = NULL
+
+Heatmap(mat.z, cluster_columns = T, cluster_rows = T, name = "Z-score")
+```
+
 
 
 
