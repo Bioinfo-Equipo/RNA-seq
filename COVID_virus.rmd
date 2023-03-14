@@ -175,15 +175,26 @@ datos de la cuantificación de kallisto. Para eso, antes hay que crear una tabla
 ```tx2gene```, que mapea genes con transcritos.
 
 ```{r tx2gene, warning=FALSE, message = FALSE}
-## Creación del archivo tx2gene a partir de los archivos de anotación de 
-## GENCODE. Se usó la versión 43, la misma usada durante el transcriptoma
-## de referencia
-txdb = makeTxDbFromGFF(file = "downloads/gencode.v43.chr_patch_hapl_scaff.annotation.gtf.gz")
-#saveDb(x = txdb, file = "gencode.v43.basic.annotation.gtf.gz") <- funcion que no dejaba renderizar hacia HTML
+ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+
+
+tx2gene = getBM(attributes=c('ensembl_transcript_id','ensembl_gene_id'), 
+                   mart = ensembl) %>% relocate(ensembl_transcript_id)
+tx2gename = getBM(attributes=c('ensembl_transcript_id', 'hgnc_symbol'), mart = ensembl)
+```
+
+Alternativamente, podríamos crear el archuvo tx2gene a partir de un archivo de anotación
+GTF/GFF3
+
+```
+## Creación del archivo tx2gene a partir de los archivos de anotación 
+txdb = makeTxDbFromGFF(file = "annotation.gtf.gz")
+saveDb(x = txdb, file = "annotation.gtf.gz") 
 k = keys(txdb, keytype = "TXNAME")
 tx2gene = select(txdb, k, "GENEID", "TXNAME")
-head(tx2gene)
 ```
+
+
 
 
 Ahora, ya podemos importar la información de kallisto:
@@ -196,7 +207,7 @@ names(files) = str_extract(files, "SRR\\d+")
 
 ## Importación de la información
 txi.kallisto.tsv = tximport(files, type = "kallisto", tx2gene = tx2gene,
-                            ignoreAfterBar = TRUE)
+                            ignoreAfterBar = TRUE, ignoreTxVersion=TRUE)
 
 ## Conteos de los primeros transcritos
 head(txi.kallisto.tsv$counts)
@@ -265,9 +276,23 @@ $\alpha=0.01$:
 ```
 
 
+## Gene Ontology Enrichment
 
 
 
+
+```{r GO}
+# resSigOrd = resSig[order(resSig$log2FoldChange, decreasing = TRUE), ]
+# DEG = rownames(resSigOrd)
+# 
+# gostres = gost(query = DEG, organism = "hsapiens", significant = T, 
+#                correction_method = "fdr", domain_scope = "custom", 
+#                custom_bg = NULL, ordered_query = TRUE)
+
+
+#write.table(as.factor(rownames(resSig)), file = "list.tsv", row.names = FALSE)
+
+```
 
 
 
@@ -402,18 +427,26 @@ Ambos archivos se encuentran en el DNA HPCC en el siguiente directorio:
 
 
 
-### MA-plot
+### MA plot
 
 
 
 ```{r MA-plot, echo=FALSE}
-plotMA(res)
+plotMA(res, main= "MA plot")
+```
+
+
+```{r MA-plot-shrinkm, message=FALSE}
+resAsh = lfcShrink(dds, coef=2, type="ashr")
+plotMA(resAsh, ylim = c(-6,6), main="MA plot con ashr LFC shrinkage")
+
 ```
 
 
 ```{r MA-plot-sig, echo=FALSE}
-plotMA(resSig)
+plotMA(resSig, main = "MA plot solo con resultados significativos")
 ```
+
 
 
 
@@ -463,7 +496,7 @@ mayor a 1 o menor a -1.
 ```{r heatmap-sig, echo=FALSE}
 resSig.df = as.data.frame(resSig)
 
-# mat = counts(dds, normalized = TRUE)[rownames(resSig.df), ]
+mat = counts(dds, normalized = TRUE)[rownames(resSig.df), ]
 
 mat.z = t(apply(mat, 1, scale))
 colnames(mat.z) = colnames(dds)
@@ -479,7 +512,7 @@ ambos tratamientos es más visible. Una vez más, observamos como la muestra
 SRR20114175 difiere del resto en un clúster de genes.
 
 
-Finalmente, podemos tener aún más resolución
+Finalmente, podemos tener otra forma de visualizar usando los genes más expresados:
 
 
 
@@ -490,7 +523,7 @@ Finalmente, podemos tener aún más resolución
 # mat2 = mat2 - rowMeans(mat2)
 # anno = as.data.frame(colData(vst)[, "disease_state"])
 # pheatmap(mat2, annotation_col = anno)
-################################################
+
 
 
 select = order(rowMeans(counts(dds ,normalized=TRUE)),
@@ -498,11 +531,22 @@ select = order(rowMeans(counts(dds ,normalized=TRUE)),
 df = as.data.frame(colData(dds)[,c("disease_state")])
 
 #heatmap
-pheatmap(assay(vst)[select,])
+pheatmap(assay(vst)[select,], show_rownames = FALSE, annotation_col = df)
 ```
 
+Podemos ver que, una vez más, las muestras de control se agrupan entre sí
 
+Otra forma de visualizar es usando los genes que tienen una mayor varianza.
 
+```{r heatmap-var, echo=FALSE}
+topVarGenes = head(order(rowVars(assay(vst)), decreasing = TRUE), 20)
+mat2 = assay(vst)[topVarGenes, ]
+mat2 = mat2 - rowMeans(mat2)
+anno2 = as.data.frame(colData(vst)[, "disease_state"])
+pheatmap(mat2, annotation_col = anno2, show_rownames = F)
+```
+
+En este caso, interesantemente, el clustering entre muestras es distinto.
 
 # Discusión
 

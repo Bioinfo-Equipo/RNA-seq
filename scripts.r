@@ -165,3 +165,25 @@ pheatmap(assay(vst)[select,], cluster_rows=FALSE, show_rownames=T,
 
 ## heatmap attempt
 
+
+
+
+library(ashr)
+
+
+select = order(rowMeans(counts(dds ,normalized=TRUE)),
+               decreasing=FALSE)[1:20]
+df = as.data.frame(colData(dds)[,c("disease_state")])
+
+#heatmap
+pheatmap(assay(vst)[select,], show_rownames = FALSE, annotation_col = df)
+
+
+
+
+#################3333
+
+
+GO
+
+
