@@ -154,7 +154,7 @@ de la abundancia, estimados de bootstrap y longitud de los transcritos llamado
 
 ### Importación de los datos de kallisto
 
-```{r libraries, include=FALSE, warning=FALSE, message=FALSE}
+```{r libraries, message=FALSE, warning=FALSE, include=FALSE}
 library(tximport)
 library(tidyverse)
 library(DESeq2)
@@ -170,6 +170,8 @@ library(genefilter)
 library(clusterProfiler)
 library(AnnotationDbi)
 library(org.Hs.eg.db)
+library(ggupset)
+library(enrichplot)
 ```
 
 
@@ -182,7 +184,7 @@ ensembl = useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl")
 
 
 tx2gene = getBM(attributes=c('ensembl_transcript_id','ensembl_gene_id'), 
-                   mart = ensembl) %>% relocate(ensembl_transcript_id)
+                   mart = ensembl) #%>% relocate(ensembl_transcript_id)
 tx2gename = getBM(attributes=c('ensembl_transcript_id', 'hgnc_symbol'), mart = ensembl)
 ```
 
@@ -288,7 +290,7 @@ resSig = subset(res, padj < 0.01)
 Para el enriquecimiento de los términos GO, se descargó la librería 
 ```org.Hs.eg.db``` que tiene la base de datos de humanos. El código usado es el
 siguiente. Solo se tomó en cuenta la ontología correspondiente al proceso biológico
-(BP). El código usado fue el siguiente
+(BP). El código usado fue el siguiente:
 
 
 ```{r GO}
@@ -296,8 +298,8 @@ genes = rownames(resSig[resSig$log2FoldChange >= 1, ])
 
 GO = enrichGO(gene = genes, OrgDb = org.Hs.eg.db, keyType = "ENSEMBL", ont = "BP")
 
-G = as.data.frame(GO)
-head(G)
+GO.df = as.data.frame(GO)
+head(GO.df)
 ```
 
 
@@ -463,19 +465,23 @@ plotMA(resSig, main = "MA plot solo con resultados significativos")
 
 ```{r volcano, warning=FALSE, echo=FALSE}
 
-de = as.data.frame(res)
+res.df = as.data.frame(res)
 
-de$diffexpressed = "NO"
-
-de$diffexpressed[de$log2FoldChange > 0.6 & de$pvalue < 0.01] <- "UP"
-
-de$diffexpressed[de$log2FoldChange < -0.6 & de$pvalue < 0.01] <- "DOWN"
+## Add genes symbols
+res.df$symbols = mapIds(org.Hs.eg.db, keys = rownames(res.df),
+                        keytype = "ENSEMBL", column = "SYMBOL")
 
 
+### Up and down genes
+res.df$diffexpressed = "NO"
+res.df$diffexpressed[res.df$log2FoldChange > 1 & res.df$padj < 0.01] <- "UP"
+res.df$diffexpressed[res.df$log2FoldChange < -1 & res.df$padj < 0.01] <- "DOWN"
 
-ggplot(data = de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed)) + 
+
+
+ggplot(data = res.df, aes(x=log2FoldChange, y=-log10(padj), col=diffexpressed, label=symbols)) + 
   geom_point() 
-  
+
 ```
 
 
@@ -550,6 +556,42 @@ pheatmap(mat2, annotation_col = anno2, show_rownames = F)
 ```
 
 En este caso, interesantemente, el clustering entre muestras es distinto.
+
+
+## GO Enrichment
+
+### Barplot
+
+```{r GO-barplot, echo=FALSE}
+barplot(GO, showCategory = 10)
+```
+
+### Dotplot
+
+```{r GO-dotplot, echo=FALSE}
+dotplot(GO)
+```
+
+
+### Gene-Concpet Network
+
+```{r network, warning=FALSE, echo=FALSE}
+cnetplot(GO, node_label = "category",color_category='firebrick', 
+         color_gene='steelblue', showCategory = 10,)
+```
+
+### Heatplot
+
+```{r heatplot, echo=FALSE}
+heatplot(GO, showCategory = 10)
+```
+
+### Upsetplot
+
+```{r upsetplot, echo=FALSE}
+upsetplot(GO, n = 10)
+```
+
 
 # Discusión
 

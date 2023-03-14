@@ -181,9 +181,32 @@ pheatmap(assay(vst)[select,], show_rownames = FALSE, annotation_col = df)
 
 
 
-#################3333
+#######################
+
+library(DOSE)
+data(geneList)
+
+de <- names(geneList)[abs(geneList) > 2]
+edo <- enrichDGN(de)
 
 
-GO
+
+
+# Create a new column "names" to de, that will contain the name of a subset if genes differentially expressed (NA in case they are not)
+At_de$names <- NA
+# filter for a subset of interesting genes
+filter <- which(At_de$diffexpressed != "NO" & At_de$padj < 0.05 & (At_de$log2FoldChange >= 5  | At_de$log2FoldChange <= -5))
+At_de$names[filter] <- rownames(At_de)[filter]
+
+# grafica
+png(file = "volcano05-res.png",
+    width = 800, height = 800) # guardar el plot en formato png
+ggplot(data=At_de, aes(x=log2FoldChange, y=-log10(pvalue), col=diffexpressed, label=names)) +
+  geom_point() +
+  scale_color_manual(values=c("blue", "black", "red")) + # cambiar colores de puntos
+  theme_minimal() +
+  geom_text_repel() +
+  xlim(-15,15)
+
 
 
