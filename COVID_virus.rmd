@@ -167,6 +167,9 @@ library(biomaRt)
 library(gprofiler2)
 library(ComplexHeatmap)
 library(genefilter)
+library(clusterProfiler)
+library(AnnotationDbi)
+library(org.Hs.eg.db)
 ```
 
 
@@ -183,8 +186,9 @@ tx2gene = getBM(attributes=c('ensembl_transcript_id','ensembl_gene_id'),
 tx2gename = getBM(attributes=c('ensembl_transcript_id', 'hgnc_symbol'), mart = ensembl)
 ```
 
-Alternativamente, podríamos crear el archuvo tx2gene a partir de un archivo de anotación
-GTF/GFF3
+Alternativamente, podríamos crear el archivo tx2gene a partir de un archivo de anotación
+GTF/GFF3 con el siguiente código, pero implicaría descargar el archivo y es un
+poco más pesado.
 
 ```
 ## Creación del archivo tx2gene a partir de los archivos de anotación 
@@ -273,25 +277,27 @@ $\alpha=0.01$:
 
 ```{r res}
 (res = results(dds, alpha = 0.01))
+
+## Significative genes
+resSig = subset(res, padj < 0.01)
 ```
 
 
 ## Gene Ontology Enrichment
 
-
+Para el enriquecimiento de los términos GO, se descargó la librería 
+```org.Hs.eg.db``` que tiene la base de datos de humanos. El código usado es el
+siguiente. Solo se tomó en cuenta la ontología correspondiente al proceso biológico
+(BP). El código usado fue el siguiente
 
 
 ```{r GO}
-# resSigOrd = resSig[order(resSig$log2FoldChange, decreasing = TRUE), ]
-# DEG = rownames(resSigOrd)
-# 
-# gostres = gost(query = DEG, organism = "hsapiens", significant = T, 
-#                correction_method = "fdr", domain_scope = "custom", 
-#                custom_bg = NULL, ordered_query = TRUE)
+genes = rownames(resSig[resSig$log2FoldChange >= 1, ])
 
+GO = enrichGO(gene = genes, OrgDb = org.Hs.eg.db, keyType = "ENSEMBL", ont = "BP")
 
-#write.table(as.factor(rownames(resSig)), file = "list.tsv", row.names = FALSE)
-
+G = as.data.frame(GO)
+head(G)
 ```
 
 
@@ -397,9 +403,6 @@ el caso y los menos expresados, en dos archivos respectivamente: ```UP_genes.tsv
 y ```DOWN_genes.tsv```.
 
 ```{r resSig-extract}
-## Significative genes
-resSig = subset(res, padj < 0.01)
-
 
 ## Up genes
 resSigUP = subset(resSig, log2FoldChange >= 1)
